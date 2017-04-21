@@ -12,8 +12,6 @@
 
 using namespace std;
 
-void computeAngles(TLorentzVector thep4H, TLorentzVector thep4Z1, TLorentzVector thep4M11, TLorentzVector thep4M12, TLorentzVector thep4Z2, TLorentzVector thep4M21, TLorentzVector thep4M22, double& costheta1, double& costheta2, double& Phi, double& costhetastar, double& Phi1);
-
 void computeAnglesTTbar(const TLorentzVector p4b1, const TLorentzVector p4W1u, const TLorentzVector p4W1d, const TLorentzVector p4b2, const TLorentzVector p4W2u, const TLorentzVector p4W2d,
 			double& costhetastar, double& costheta1, double& costheta2, double& costhetaW1, double& costhetaW2, 
 			double& Phi, double& Phi1, double& Phi2, double& PhiW1, double& PhiW2);
@@ -38,7 +36,6 @@ int main (int argc, char **argv) {
     float mttbar; 
     float costheta1, costheta2, costhetastar, costhetaW1, costhetaW2;
     float phi, phi1, phi2, phiW1, phiW2;
-    //float dEtajj, dPhijj, mjj;
     float dPhi12, dPhiW1W2, dPhi1W1, dPhi2W2;
     
     tree->Branch("mttbar",&mttbar,"mttbar/F");
@@ -52,9 +49,6 @@ int main (int argc, char **argv) {
     tree->Branch("phi2",&phi2,"phi2/F");
     tree->Branch("phiW1",&phiW1,"phiW1/F");
     tree->Branch("phiW2",&phiW2,"phiW2/F");
-    //tree->Branch("dEtajj",&dEtajj,"dEtajj/F");
-    //tree->Branch("dPhijj",&dPhijj,"dPhijj/F");
-    //tree->Branch("mjj",&mjj,"mjj/F");
     tree->Branch("dPhi12",&dPhi12,"dPhi12/F");
     tree->Branch("dPhiW1W2",&dPhiW1W2,"dPhiW1W2/F");
     tree->Branch("dPhi1W1",&dPhi1W1,"dPhi1W1/F");
@@ -65,11 +59,6 @@ int main (int argc, char **argv) {
     //PG -------------
     
     int BKGnumber = 0 ;
-    int BKGnumberWithObj = 0 ;
-    int VBFBKGnumber = 0 ;
-    
-    int NSignal = 0;
-    int NTotal = 0;
     
     std::ifstream ifsbkg (argv[1]) ;
     // Create the Reader object
@@ -270,18 +259,6 @@ int main (int argc, char **argv) {
 	    mttbar = -1;
 	}
 	    
-/*
-       
-        //mWW = (float) p4_WW.M();
-        //mWLep = (float) p4_WLep.M();
-        //mWHad = (float) p4_WHad.M();        
-
-        dEtajj = (float) fabs( fs_Iqrk0.Eta() - fs_Iqrk1.Eta() );
-        dPhijj = (float) deltaPhi(fs_Iqrk0.Phi(),fs_Iqrk1.Phi());     
-        mjj = (float) (fs_Iqrk0 + fs_Iqrk1).M();
-
-        isSignal = signalFlag;
-*/        
         tree->Fill();
         
     }
@@ -534,104 +511,5 @@ void computeAnglesTTbar(
     cout << "   boostV1: " <<boostV1.Pt() << " " << boostV1.Eta() << " " << boostV1.Phi() << " " << boostV1.Mag() << endl;
     cout << "   boostV2: " <<boostV2.Pt() << " " << boostV2.Eta() << " " << boostV2.Phi() << " " << boostV2.Mag() << endl;
   }
-}
-
-
-
-
-
-void computeAngles(TLorentzVector thep4H, TLorentzVector thep4Z1, TLorentzVector thep4M11, TLorentzVector thep4M12, TLorentzVector thep4Z2, TLorentzVector thep4M21, TLorentzVector thep4M22, double& costheta1, double& costheta2, double& Phi, double& costhetastar, double& Phi1){
-    
-    ///////////////////////////////////////////////
-    // check for z1/z2 convention, redefine all 4 vectors with convention
-    ///////////////////////////////////////////////	
-    TLorentzVector p4H, p4Z1, p4M11, p4M12, p4Z2, p4M21, p4M22;
-    p4H = thep4H;
-    
-    p4Z1 = thep4Z1; p4M11 = thep4M11; p4M12 = thep4M12;
-    p4Z2 = thep4Z2; p4M21 = thep4M21; p4M22 = thep4M22;
-    //// costhetastar
-	TVector3 boostX = -(thep4H.BoostVector());
-	TLorentzVector thep4Z1inXFrame( p4Z1 );
-	TLorentzVector thep4Z2inXFrame( p4Z2 );	
-	thep4Z1inXFrame.Boost( boostX );
-	thep4Z2inXFrame.Boost( boostX );
-	TVector3 theZ1X_p3 = TVector3( thep4Z1inXFrame.X(), thep4Z1inXFrame.Y(), thep4Z1inXFrame.Z() );
-	TVector3 theZ2X_p3 = TVector3( thep4Z2inXFrame.X(), thep4Z2inXFrame.Y(), thep4Z2inXFrame.Z() );    
-    costhetastar = theZ1X_p3.CosTheta();
-    
-    //// --------------------------- costheta1
-    TVector3 boostV1 = -(thep4Z1.BoostVector());
-    TLorentzVector p4M11_BV1( p4M11 );
-	TLorentzVector p4M12_BV1( p4M12 );	
-    TLorentzVector p4M21_BV1( p4M21 );
-	TLorentzVector p4M22_BV1( p4M22 );
-    p4M11_BV1.Boost( boostV1 );
-	p4M12_BV1.Boost( boostV1 );
-	p4M21_BV1.Boost( boostV1 );
-	p4M22_BV1.Boost( boostV1 );
-    
-    TLorentzVector p4V2_BV1 = p4M21_BV1 + p4M22_BV1;
-    //// costheta1
-    costheta1 = -p4V2_BV1.Vect().Dot( p4M11_BV1.Vect() )/p4V2_BV1.Vect().Mag()/p4M11_BV1.Vect().Mag();
-    
-    //// --------------------------- costheta2
-    TVector3 boostV2 = -(thep4Z2.BoostVector());
-    TLorentzVector p4M11_BV2( p4M11 );
-	TLorentzVector p4M12_BV2( p4M12 );	
-    TLorentzVector p4M21_BV2( p4M21 );
-	TLorentzVector p4M22_BV2( p4M22 );
-    p4M11_BV2.Boost( boostV2 );
-	p4M12_BV2.Boost( boostV2 );
-	p4M21_BV2.Boost( boostV2 );
-	p4M22_BV2.Boost( boostV2 );
-    
-    TLorentzVector p4V1_BV2 = p4M11_BV2 + p4M12_BV2;
-    //// costheta2
-    costheta2 = -p4V1_BV2.Vect().Dot( p4M21_BV2.Vect() )/p4V1_BV2.Vect().Mag()/p4M21_BV2.Vect().Mag();
-    
-    //// --------------------------- Phi and Phi1
-    //    TVector3 boostX = -(thep4H.BoostVector());
-    TLorentzVector p4M11_BX( p4M11 );
-	TLorentzVector p4M12_BX( p4M12 );	
-    TLorentzVector p4M21_BX( p4M21 );
-	TLorentzVector p4M22_BX( p4M22 );	
-    
-	p4M11_BX.Boost( boostX );
-	p4M12_BX.Boost( boostX );
-	p4M21_BX.Boost( boostX );
-	p4M22_BX.Boost( boostX );
-    
-    TVector3 tmp1 = p4M11_BX.Vect().Cross( p4M12_BX.Vect() );
-    TVector3 tmp2 = p4M21_BX.Vect().Cross( p4M22_BX.Vect() );    
-    
-    TVector3 normal1_BX( tmp1.X()/tmp1.Mag(), tmp1.Y()/tmp1.Mag(), tmp1.Z()/tmp1.Mag() ); 
-    TVector3 normal2_BX( tmp2.X()/tmp2.Mag(), tmp2.Y()/tmp2.Mag(), tmp2.Z()/tmp2.Mag() ); 
-    
-    //// Phi
-    TLorentzVector p4Z1_BX = p4M11_BX + p4M12_BX;    
-    double tmpSgnPhi = p4Z1_BX.Vect().Dot( normal1_BX.Cross( normal2_BX) );
-    double sgnPhi = tmpSgnPhi/fabs(tmpSgnPhi);
-    Phi = sgnPhi * acos( -1.*normal1_BX.Dot( normal2_BX) );
-    
-    
-    //////////////
-    
-    TVector3 beamAxis(0,0,1);
-    TVector3 tmp3 = (p4M11_BX + p4M12_BX).Vect();
-    
-    TVector3 p3V1_BX( tmp3.X()/tmp3.Mag(), tmp3.Y()/tmp3.Mag(), tmp3.Z()/tmp3.Mag() );
-    TVector3 tmp4 = beamAxis.Cross( p3V1_BX );
-    TVector3 normalSC_BX( tmp4.X()/tmp4.Mag(), tmp4.Y()/tmp4.Mag(), tmp4.Z()/tmp4.Mag() );
-    
-    //// Phi1
-    double tmpSgnPhi1 = p4Z1_BX.Vect().Dot( normal1_BX.Cross( normalSC_BX) );
-    double sgnPhi1 = tmpSgnPhi1/fabs(tmpSgnPhi1);    
-    Phi1 = sgnPhi1 * acos( normal1_BX.Dot( normalSC_BX) );    
-    
-    //    std::cout << "extractAngles: " << std::endl;
-    //    std::cout << "costhetastar = " << costhetastar << ", costheta1 = " << costheta1 << ", costheta2 = " << costheta2 << std::endl;
-    //    std::cout << "Phi = " << Phi << ", Phi1 = " << Phi1 << std::endl;    
-    
 }
 
